@@ -1,10 +1,10 @@
 namespace :copy do
-
-  archive_name = "archive.tar.gz"
-  include_dir  = fetch(:include_dir) || "*"
+  change_dir = `git rev-parse --show-toplevel`.strip
+  archive_name = "#{change_dir}/archive.tar.gz"
+  include_dir  = fetch(:include_dir) || "#{change_dir}/*"
   exclude_dir  = Array(fetch(:exclude_dir))
 
-  exclude_args = exclude_dir.map { |dir| "--exclude '#{dir}'"}
+  exclude_args = exclude_dir.map { |dir| "--exclude '#{change_dir}/#{dir}'"}
 
   # Defalut to :all roles
   tar_roles = fetch(:tar_roles, :all)
