@@ -1,1 +1,1 @@
-load File.expand_path('../tasks/copy.rake', __FILE__)
+require File.expand_path('../tasks/copy', __FILE__)
