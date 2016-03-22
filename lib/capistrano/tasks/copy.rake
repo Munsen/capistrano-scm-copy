@@ -1,24 +1,22 @@
 namespace :copy do
-  change_dir = `git rev-parse --show-toplevel`.strip
-  archive_name = "#{change_dir}/archive.tar.gz"
-  include_dir  = fetch(:include_dir) || "#{change_dir}/*"
-  exclude_dir  = Array(fetch(:exclude_dir))
-
-  exclude_args = exclude_dir.map { |dir| "--exclude '#{change_dir}/#{dir}'"}
+  archive_name = "archive.gz"
 
   # Defalut to :all roles
   tar_roles = fetch(:tar_roles, :all)
-
   tar_verbose = fetch(:tar_verbose, true) ? "v" : ""
 
   desc "Archive files to #{archive_name}"
-  file archive_name => FileList[include_dir].exclude(archive_name) do |t|
-    cmd = ["tar -c#{tar_verbose}zf #{t.name}", *exclude_args, *t.prerequisites]
+  file archive_name do |t|
+    include_dir  = fetch(:include_dir) || "*"
+    exclude_dir  = Array(fetch(:exclude_dir)).push(archive_name)
+    exclude_args = exclude_dir.map { |dir| "--exclude '#{dir}'"}
+
+    cmd = ["tar -c#{tar_verbose}zf #{t.name}", *exclude_args, *include_dir ]
     sh cmd.join(' ')
   end
 
   desc "Deploy #{archive_name} to release_path"
-  task :deploy => archive_name do |t|
+  task :release => archive_name do |t|
     tarball = t.prerequisites.first
 
     on roles(tar_roles) do
@@ -43,8 +41,7 @@ namespace :copy do
 
   after 'deploy:finished', 'copy:clean'
 
-  task :create_release => :deploy
+  task :create_release => :release
   task :check
   task :set_current_revision
-
 end
