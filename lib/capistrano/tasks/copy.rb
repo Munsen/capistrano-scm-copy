@@ -16,8 +16,10 @@ namespace :copy do
   end
 
   desc "Deploy #{archive_name} to release_path"
-  task :release => archive_name do |t|
-    tarball = t.prerequisites.first
+  task :release do |t|
+    delete archive_name
+    Rake::Task[archive_name].execute
+    tarball = archive_name
 
     on roles(tar_roles) do
       # Make sure the release directory exists
